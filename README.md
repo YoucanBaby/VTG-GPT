@@ -9,6 +9,8 @@
 
 # VTG-GPT
 
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/vtg-gpt-tuning-free-zero-shot-video-temporal/zero-shot-moment-retrieval-on-qvhighlights)](https://paperswithcode.com/sota/zero-shot-moment-retrieval-on-qvhighlights?p=vtg-gpt-tuning-free-zero-shot-video-temporal)
+
 This is our implementation for the paper **VTG-GPT: Tuning-Free Zero-Shot Video Temporal Grounding with GPT**. 
 
 VTG-GPT leverages frozen GPT to enable zero-shot inference without training.
