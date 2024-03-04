@@ -9,7 +9,9 @@
 
 # VTG-GPT
 
-This is our implementation for the paper **VTG-GPT: Tuning-Free Zero-Shot Video Temporal Grounding with GPT**.
+This is our implementation for the paper **VTG-GPT: Tuning-Free Zero-Shot Video Temporal Grounding with GPT**. 
+
+VTG-GPT leverages frozen GPT to enable zero-shot inference without training.
 
 ![Alt text](manuscript/pipeline.png)
 
@@ -57,9 +59,9 @@ TODO
 
 # Acknowledgement
 
-[Moment-DETR](https://github.com/jayleicn/moment_detr)
-[MiniGPT-4](https://github.com/Vision-CAIR/MiniGPT-4)
-[Baichuan2](https://github.com/baichuan-inc/Baichuan2)
+We thank Youyao Jia for helpful discussions.
+
+This code is based on [Moment-DETR](https://github.com/jayleicn/moment_detr). We used resources from [MiniGPT-4](https://github.com/Vision-CAIR/MiniGPT-4), [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [LLaMa2](https://github.com/facebookresearch/llama). We thank the authors for their awesome open-source contributions.
 
 
 # Citation
