@@ -31,7 +31,6 @@ pip install -r requirements.txt
 
 ```sh
 cd data/qvhighlights/caption/
-unzip test.zip
 unzip val.zip
 ```
 
