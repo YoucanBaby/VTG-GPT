@@ -13,7 +13,7 @@
 
 This is our implementation for the paper **VTG-GPT: Tuning-Free Zero-Shot Video Temporal Grounding with GPT**. 
 
-VTG-GPT leverages frozen GPT to enable zero-shot inference without training.
+VTG-GPT leverages frozen GPTs to enable zero-shot inference without training.
 
 ![Alt text](manuscript/pipeline.png)
 
