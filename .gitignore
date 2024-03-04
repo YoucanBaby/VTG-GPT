@@ -37,5 +37,5 @@ LLaVA-7B-Lightening-v1-1/
 Baichuan2/
 
 # outputs
-data/qvhighlights/caption/val*
-data/qvhighlights/caption/test*
+data/qvhighlights/caption/val
+data/qvhighlights/caption/test
