@@ -3,6 +3,7 @@
   - [Inference on QVHighlights val split](#inference-on-qvhighlights-val-split)
   - [MiniGPT-v2 for Image captioning](#minigpt-v2-for-image-captioning)
   - [Baichuan2 for Query debiasing](#baichuan2-for-query-debiasing)
+- [Acknowledgement](#acknowledgement)
 - [Citation](#citation)
 
 
@@ -22,9 +23,13 @@ conda activate vtg-gpt
 pip install -r requirements.txt
 ```
 
-2. Download caption files
+2. Unzip caption files
 
-
+```sh
+cd data/qvhighlights/caption/
+unzip test.zip
+unzip val.zip
+```
 
 
 ## Inference on QVHighlights val split
@@ -49,6 +54,12 @@ TODO
 
 ## Baichuan2 for Query debiasing
 TODO
+
+# Acknowledgement
+
+[Moment-DETR](https://github.com/jayleicn/moment_detr)
+[MiniGPT-4](https://github.com/Vision-CAIR/MiniGPT-4)
+[Baichuan2](https://github.com/baichuan-inc/Baichuan2)
 
 
 # Citation

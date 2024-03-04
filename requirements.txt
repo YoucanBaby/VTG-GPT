@@ -1,0 +1,6 @@
+tqdm
+numpy
+torch==2.0.0
+platformdirs==3.11.0
+sentence_transformers
+pandas
