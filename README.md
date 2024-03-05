@@ -1,3 +1,14 @@
+# VTG-GPT
+
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/vtg-gpt-tuning-free-zero-shot-video-temporal/zero-shot-moment-retrieval-on-qvhighlights)](https://paperswithcode.com/sota/zero-shot-moment-retrieval-on-qvhighlights?p=vtg-gpt-tuning-free-zero-shot-video-temporal)
+<a href='https://arxiv.org/abs/2403.02076'><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a>
+
+This is our implementation for the paper **VTG-GPT: Tuning-Free Zero-Shot Video Temporal Grounding with GPT**. 
+
+VTG-GPT leverages frozen GPTs to enable zero-shot inference without training.
+
+![Alt text](manuscript/pipeline.png)
+
 - [VTG-GPT](#vtg-gpt)
   - [Preparation](#preparation)
   - [Inference on QVHighlights val split](#inference-on-qvhighlights-val-split)
@@ -6,16 +17,6 @@
 - [Acknowledgement](#acknowledgement)
 - [Citation](#citation)
 
-
-# VTG-GPT
-
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/vtg-gpt-tuning-free-zero-shot-video-temporal/zero-shot-moment-retrieval-on-qvhighlights)](https://paperswithcode.com/sota/zero-shot-moment-retrieval-on-qvhighlights?p=vtg-gpt-tuning-free-zero-shot-video-temporal)
-
-This is our implementation for the paper **VTG-GPT: Tuning-Free Zero-Shot Video Temporal Grounding with GPT**. 
-
-VTG-GPT leverages frozen GPTs to enable zero-shot inference without training.
-
-![Alt text](manuscript/pipeline.png)
 
 ## Preparation
 
