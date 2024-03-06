@@ -63,7 +63,7 @@ TODO
 
 We thank Youyao Jia for helpful discussions.
 
-This code is based on [Moment-DETR](https://github.com/jayleicn/moment_detr). We used resources from [MiniGPT-4](https://github.com/Vision-CAIR/MiniGPT-4), [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [LLaMa2](https://github.com/facebookresearch/llama). We thank the authors for their awesome open-source contributions.
+This code is based on [Moment-DETR](https://github.com/jayleicn/moment_detr) and [SeViLA](https://github.com/Yui010206/SeViLA). We used resources from [MiniGPT-4](https://github.com/Vision-CAIR/MiniGPT-4), [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [LLaMa2](https://github.com/facebookresearch/llama). We thank the authors for their awesome open-source contributions.
 
 
 # Citation
