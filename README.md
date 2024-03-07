@@ -1,7 +1,7 @@
 # VTG-GPT
 
 <a href='https://arxiv.org/abs/2403.02076'><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a>
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/vtg-gpt-tuning-free-zero-shot-video-temporal/zero-shot-moment-retrieval-on-qvhighlights)](https://paperswithcode.com/sota/zero-shot-moment-retrieval-on-qvhighlights?p=vtg-gpt-tuning-free-zero-shot-video-temporal)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/vtg-gpt-tuning-free-zero-shot-video-temporal-1/zero-shot-moment-retrieval-on-qvhighlights)](https://paperswithcode.com/sota/zero-shot-moment-retrieval-on-qvhighlights?p=vtg-gpt-tuning-free-zero-shot-video-temporal-1)
 
 This is our implementation for the paper **VTG-GPT: Tuning-Free Zero-Shot Video Temporal Grounding with GPT**. 
 
