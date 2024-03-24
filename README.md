@@ -40,7 +40,7 @@ unzip val.zip
 
 ```sh
 # inference
-python infer_qvhighlights.py --val
+python infer_qvhighlights.py val
 
 # evaluation
 bash standalone_eval/eval.sh
