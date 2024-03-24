@@ -1,22 +1,18 @@
-import copy
-import json
-import multiprocessing as mp
-import time
-from collections import OrderedDict, defaultdict
-
 import numpy as np
-
-from standalone_eval.utils import (compute_average_precision_detection,
-                                   compute_temporal_iou_batch_cross,
-                                   compute_temporal_iou_batch_paired, get_ap,
-                                   load_jsonl)
+from collections import OrderedDict, defaultdict
+import json
+import time
+import copy
+import multiprocessing as mp
+from standalone_eval.utils import compute_average_precision_detection, \
+    compute_temporal_iou_batch_cross, compute_temporal_iou_batch_paired, load_jsonl, get_ap
 
 
 def compute_average_precision_detection_wrapper(
         input_triple, tiou_thresholds=np.linspace(0.5, 0.95, 10)):
     qid, ground_truth, prediction = input_triple
     scores = compute_average_precision_detection(
-                    ground_truth, prediction, tiou_thresholds=tiou_thresholds)
+        ground_truth, prediction, tiou_thresholds=tiou_thresholds)
     return qid, scores
 
 
@@ -24,10 +20,9 @@ def compute_mr_ap(submission, ground_truth, iou_thds=np.linspace(0.5, 0.95, 10),
                   max_gt_windows=None, max_pred_windows=10, num_workers=8, chunksize=50):
     iou_thds = [float(f"{e:.2f}") for e in iou_thds]
     pred_qid2data = defaultdict(list)
-    
     for d in submission:
         pred_windows = d["pred_relevant_windows"][:max_pred_windows] \
-                                if max_pred_windows is not None else d["pred_relevant_windows"]
+            if max_pred_windows is not None else d["pred_relevant_windows"]
         qid = d["qid"]
         for w in pred_windows:
             pred_qid2data[qid].append({
@@ -51,9 +46,9 @@ def compute_mr_ap(submission, ground_truth, iou_thds=np.linspace(0.5, 0.95, 10),
     qid2ap_list = {}
     # start_time = time.time()
     data_triples = [[qid, gt_qid2data[qid], pred_qid2data[qid]] for qid in pred_qid2data]
-    
     from functools import partial
-    compute_ap_from_triple = partial(compute_average_precision_detection_wrapper, tiou_thresholds=iou_thds)
+    compute_ap_from_triple = partial(
+        compute_average_precision_detection_wrapper, tiou_thresholds=iou_thds)
 
     if num_workers > 1:
         with mp.Pool(num_workers) as pool:
@@ -65,9 +60,8 @@ def compute_mr_ap(submission, ground_truth, iou_thds=np.linspace(0.5, 0.95, 10),
             qid2ap_list[qid] = scores
 
     # print(f"compute_average_precision_detection {time.time() - start_time:.2f} seconds.")
-    ap_array = np.array(list(qid2ap_list.values()))     # (#queries, #thd)
-    ap_thds = ap_array.mean(0)                          # mAP at different IoU thresholds.
-    
+    ap_array = np.array(list(qid2ap_list.values()))  # (#queries, #thd)
+    ap_thds = ap_array.mean(0)  # mAP at different IoU thresholds.
     iou_thd2ap = dict(zip([str(e) for e in iou_thds], ap_thds))
     iou_thd2ap["average"] = np.mean(ap_thds)
     # formatting
@@ -75,13 +69,11 @@ def compute_mr_ap(submission, ground_truth, iou_thds=np.linspace(0.5, 0.95, 10),
     return iou_thd2ap
 
 
-def compute_mr_r1(submission, ground_truth, iou_thds=np.linspace(0.5, 0.95, 10)):
+def compute_mr_r1(submission, ground_truth, iou_thds=np.linspace(0.3, 0.95, 14)):
     """If a predicted segment has IoU >= iou_thd with one of the 1st GT segment, we define it positive"""
-    
     iou_thds = [float(f"{e:.2f}") for e in iou_thds]
-    
     pred_qid2window = {d["qid"]: d["pred_relevant_windows"][0][:2] for d in submission}  # :2 rm scores
-
+    # gt_qid2window = {d["qid"]: d["relevant_windows"][0] for d in ground_truth}
     gt_qid2window = {}
     for d in ground_truth:
         cur_gt_windows = d["relevant_windows"]
@@ -95,49 +87,14 @@ def compute_mr_r1(submission, ground_truth, iou_thds=np.linspace(0.5, 0.95, 10))
         gt_qid2window[cur_qid] = cur_gt_windows[cur_max_iou_idx]
 
     qids = list(pred_qid2window.keys())
-    pred_windows = np.array([pred_qid2window[k] for k in qids]).astype(float)   #(B, 2)
-    gt_windows = np.array([gt_qid2window[k] for k in qids]).astype(float)       #(B, 2)
-    pred_gt_iou = compute_temporal_iou_batch_paired(pred_windows, gt_windows)   #(B, 2)
-    
+    pred_windows = np.array([pred_qid2window[k] for k in qids]).astype(float)
+    gt_windows = np.array([gt_qid2window[k] for k in qids]).astype(float)
+    pred_gt_iou = compute_temporal_iou_batch_paired(pred_windows, gt_windows)
     iou_thd2recall_at_one = {}
+    miou_at_one = float(f"{np.mean(pred_gt_iou) * 100:.2f}")
     for thd in iou_thds:
         iou_thd2recall_at_one[str(thd)] = float(f"{np.mean(pred_gt_iou >= thd) * 100:.2f}")
-    
-    return iou_thd2recall_at_one
-
-
-def compute_mr_r5(submission, ground_truth, iou_thds=np.linspace(0.5, 0.95, 10)):
-    """If a predicted segment has IoU >= iou_thd with one of the 5th GT segment, we define it positive"""
-    iou_thds = [float(f"{e:.2f}") for e in iou_thds]
-    pred_qid2window = {d["qid"]: 
-                            [d["pred_relevant_windows"][i][:2] for i in range(5)] 
-                                                                    for d in submission}
-
-    gt_qid2window = {}
-    for d in ground_truth:
-        cur_gt_windows = d["relevant_windows"]
-        cur_qid = d["qid"]
-        gt_qid2window[cur_qid] = cur_gt_windows[0]
-        
-    qids = list(pred_qid2window.keys())
-    gt_windows = np.array([gt_qid2window[k] for k in qids]).astype(float)
-    pred_gt_iou = []
-    
-    for i in range(5):
-        pred_windows = np.array([pred_qid2window[k][i] for k in qids]).astype(float)
-        pred_gt_iou.append(compute_temporal_iou_batch_paired(pred_windows, gt_windows))
-
-    pred_gt_iou = np.stack(pred_gt_iou, axis=0)
-    
-    iou_thd2recall_at_five = {}
-    
-    for thd in iou_thds:
-        temp = np.sum(pred_gt_iou >= thd, axis=0)
-        temp = np.mean(temp > 0)
-        temp = temp * 100
-        iou_thd2recall_at_five[str(thd)] = float(f"{temp:.2f}")
-        
-    return iou_thd2recall_at_five
+    return iou_thd2recall_at_one, miou_at_one
 
 
 def get_window_len(window):
@@ -160,8 +117,8 @@ def get_data_by_range(submission, ground_truth, len_range):
     ground_truth_in_range = []
     gt_qids_in_range = set()
     for d in ground_truth:
-        rel_windows_in_range = \
-                    [w for w in d["relevant_windows"] if min_l < get_window_len(w) <= max_l]
+        rel_windows_in_range = [
+            w for w in d["relevant_windows"] if min_l < get_window_len(w) <= max_l]
         if len(rel_windows_in_range) > 0:
             d = copy.deepcopy(d)
             d["relevant_windows"] = rel_windows_in_range
@@ -177,44 +134,36 @@ def get_data_by_range(submission, ground_truth, len_range):
     return submission_in_range, ground_truth_in_range
 
 
-def eval_moment_retrieval(submission, ground_truth, dataset, verbose=True):
+def eval_moment_retrieval(submission, ground_truth, verbose=True):
     length_ranges = [[0, 10], [10, 30], [30, 150], [0, 150], ]  #
     range_names = ["short", "middle", "long", "full"]
-    
+
     ret_metrics = {}
-    
-    if dataset == "qvhighlights":
-        for l_range, name in zip(length_ranges, range_names):
-            if verbose:
-                start_time = time.time()
-                
-            _submission, _ground_truth = get_data_by_range(submission, ground_truth, l_range)
-            
-            print(f"{name}: {l_range}, {len(_ground_truth)}/{len(ground_truth)}=" 
-                            f"{100*len(_ground_truth)/len(ground_truth):.2f} examples.")
-            iou_thd2average_precision = compute_mr_ap(_submission, _ground_truth, num_workers=8, chunksize=50)
-            iou_thd2recall_at_one = compute_mr_r1(_submission, _ground_truth)
-            ret_metrics[name] = {"MR-mAP": iou_thd2average_precision, "MR-R1": iou_thd2recall_at_one}
-            
-            if verbose:
-                print(f"[eval_moment_retrieval] [{name}] {time.time() - start_time:.2f} seconds")
-                
-    if dataset == "charades":
+    for l_range, name in zip(length_ranges, range_names):
         if verbose:
             start_time = time.time()
-        
-        iou_thd2average_precision = compute_mr_ap(submission, ground_truth, num_workers=8, chunksize=50)
-        iou_thd2recall_at_one = compute_mr_r1(submission, ground_truth)
-        iou_thd2recall_at_five = compute_mr_r5(submission, ground_truth)
-        ret_metrics["full"] = {
-            "MR-mAP": iou_thd2average_precision, 
-            "MR-R1": iou_thd2recall_at_one,
-            "MR-R5": iou_thd2recall_at_five
-        }
-            
-        if verbose:
+        _submission, _ground_truth = get_data_by_range(submission, ground_truth, l_range)
+        print(f"{name}: {l_range}, {len(_ground_truth)}/{len(ground_truth)}="
+              f"{100*len(_ground_truth)/len(ground_truth):.2f} examples.")
+        if len(_ground_truth) == 0:
+            # ret_metrics[name] = {"MR-mAP": 0., "MR-R1": 0.}
+            dummy_dict = {}
+            for k in np.linspace(0.5, 0.95, 19):
+                dummy_dict[k] = 0.
+            dummy_dict['average'] = 0.
+            ret_metrics[name] = {"MR-mAP": dummy_dict, "MR-R1": dummy_dict}
+        else:
+            iou_thd2average_precision = compute_mr_ap(_submission, _ground_truth, num_workers=8, chunksize=50)
+            iou_thd2recall_at_one, miou_at_one = compute_mr_r1(_submission, _ground_truth)
+            ret_metrics[name] = {"MR-mIoU": miou_at_one,
+                                 "MR-mAP": iou_thd2average_precision,
+                                 "MR-R1": iou_thd2recall_at_one}
+
+            # iou_thd2average_precision = compute_mr_ap(_submission, _ground_truth, num_workers=8, chunksize=50)
+            # iou_thd2recall_at_one = compute_mr_r1(_submission, _ground_truth)
+            # ret_metrics[name] = {"MR-mAP": iou_thd2average_precision, "MR-R1": iou_thd2recall_at_one}
+            if verbose:
                 print(f"[eval_moment_retrieval] [{name}] {time.time() - start_time:.2f} seconds")
-        
     return ret_metrics
 
 
@@ -235,7 +184,7 @@ def compute_hl_hit1(qid2preds, qid2gt_scores_binary):
 
 def compute_hl_ap(qid2preds, qid2gt_scores_binary, num_workers=8, chunksize=50):
     qid2pred_scores = {k: v["pred_saliency_scores"] for k, v in qid2preds.items()}
-    ap_scores = np.zeros((len(qid2preds), 3))       #(#preds, 3)
+    ap_scores = np.zeros((len(qid2preds), 3))   # (#preds, 3)
     qids = list(qid2preds.keys())
     input_tuples = []
     for idx, qid in enumerate(qids):
@@ -257,18 +206,11 @@ def compute_hl_ap(qid2preds, qid2gt_scores_binary, num_workers=8, chunksize=50):
     # it's the same if we first average across different annotations, then average across queries
     # since all queries have the same #annotations.
     mean_ap = float(f"{100 * np.mean(ap_scores):.2f}")
-    
-    
-    # max_idx = np.argmax(pred_gt_iou)
-    # n_largest = heapq.nlargest(3, range(len(pred_gt_iou)), pred_gt_iou.take)
-    # temp = pred_gt_iou[n_largest]
-    
     return mean_ap
 
 
 def compute_ap_from_tuple(input_tuple):
     idx, w_idx, y_true, y_predict = input_tuple
-    
     if len(y_true) < len(y_predict):
         # print(f"len(y_true) < len(y_predict) {len(y_true), len(y_predict)}")
         y_predict = y_predict[:len(y_true)]
@@ -279,7 +221,6 @@ def compute_ap_from_tuple(input_tuple):
         y_predict = _y_predict
 
     score = get_ap(y_true, y_predict)
-    
     return idx, w_idx, score
 
 
@@ -303,31 +244,24 @@ def eval_highlight(submission, ground_truth, verbose=True):
     qid2preds = {d["qid"]: d for d in submission}
     qid2gt_scores_full_range = {d["qid"]: mk_gt_scores(d) for d in ground_truth}  # scores in range [0, 4]
     # gt_saliency_score_min: int, in [0, 1, 2, 3, 4]. The minimum score for a positive clip.
-    
     gt_saliency_score_min_list = [2, 3, 4]
     saliency_score_names = ["Fair", "Good", "VeryGood"]
-    
     highlight_det_metrics = {}
     for gt_saliency_score_min, score_name in zip(gt_saliency_score_min_list, saliency_score_names):
         start_time = time.time()
         qid2gt_scores_binary = {
             k: (v >= gt_saliency_score_min).astype(float)
             for k, v in qid2gt_scores_full_range.items()}  # scores in [0, 1]
-        
         hit_at_one = compute_hl_hit1(qid2preds, qid2gt_scores_binary)
-        
         mean_ap = compute_hl_ap(qid2preds, qid2gt_scores_binary)
-        
         highlight_det_metrics[f"HL-min-{score_name}"] = {"HL-mAP": mean_ap, "HL-Hit1": hit_at_one}
-        
         if verbose:
             print(f"Calculating highlight scores with min score {gt_saliency_score_min} ({score_name})")
             print(f"Time cost {time.time() - start_time:.2f} seconds")
-            
     return highlight_det_metrics
 
 
-def eval_submission(submission, ground_truth, dataset="qvhighlights", verbose=True, match_number=True):
+def eval_submission(submission, ground_truth, verbose=True, match_number=True):
     """
     Args:
         submission: list(dict), each dict is {
@@ -355,10 +289,8 @@ def eval_submission(submission, ground_truth, dataset="qvhighlights", verbose=Tr
     Returns:
 
     """
-    
     pred_qids = set([e["qid"] for e in submission])
     gt_qids = set([e["qid"] for e in ground_truth])
-    
     if match_number:
         assert pred_qids == gt_qids, \
             f"qids in ground_truth and submission must match. " \
@@ -370,48 +302,34 @@ def eval_submission(submission, ground_truth, dataset="qvhighlights", verbose=Tr
 
     eval_metrics = {}
     eval_metrics_brief = OrderedDict()
-    
-    if dataset == "qvhighlights":
-        if "pred_relevant_windows" in submission[0]:
-            
-            moment_ret_scores = eval_moment_retrieval(submission, ground_truth, dataset, verbose=verbose)
-            
-            eval_metrics.update(moment_ret_scores)
-            moment_ret_scores_brief = {
-                "MR-full-mAP": moment_ret_scores["full"]["MR-mAP"]["average"],
-                "MR-full-mAP@0.5": moment_ret_scores["full"]["MR-mAP"]["0.5"],
-                "MR-full-mAP@0.75": moment_ret_scores["full"]["MR-mAP"]["0.75"],
-                "MR-full-R1@0.5": moment_ret_scores["full"]["MR-R1"]["0.5"],
-                "MR-full-R1@0.7": moment_ret_scores["full"]["MR-R1"]["0.7"],
-                "MR-short-mAP": moment_ret_scores["short"]["MR-mAP"]["average"],
-                "MR-middle-mAP": moment_ret_scores["middle"]["MR-mAP"]["average"],
-                "MR-long-mAP": moment_ret_scores["long"]["MR-mAP"]["average"],
-            }
-            eval_metrics_brief.update(
-                sorted([(k, v) for k, v in moment_ret_scores_brief.items()], key=lambda x: x[0]))
-
-        if "pred_saliency_scores" in submission[0]:
-            highlight_det_scores = eval_highlight(
-                submission, ground_truth, verbose=verbose)
-            eval_metrics.update(highlight_det_scores)
-            highlight_det_scores_brief = dict([
-                (f"{k}-{sub_k.split('-')[1]}", v[sub_k])
-                for k, v in highlight_det_scores.items() for sub_k in v])
-            eval_metrics_brief.update(highlight_det_scores_brief)
-    
-    if dataset in ["charades", "activity"]:
-        moment_ret_scores = eval_moment_retrieval(submission, ground_truth, dataset, verbose=verbose)
+    if "pred_relevant_windows" in submission[0]:
+        moment_ret_scores = eval_moment_retrieval(
+            submission, ground_truth, verbose=verbose)
         eval_metrics.update(moment_ret_scores)
         moment_ret_scores_brief = {
             "MR-full-mAP": moment_ret_scores["full"]["MR-mAP"]["average"],
             "MR-full-mAP@0.5": moment_ret_scores["full"]["MR-mAP"]["0.5"],
             "MR-full-mAP@0.75": moment_ret_scores["full"]["MR-mAP"]["0.75"],
+            "MR-short-mAP": moment_ret_scores["short"]["MR-mAP"]["average"],
+            "MR-middle-mAP": moment_ret_scores["middle"]["MR-mAP"]["average"],
+            "MR-long-mAP": moment_ret_scores["long"]["MR-mAP"]["average"],
+            "MR-full-mIoU": moment_ret_scores["full"]["MR-mIoU"],
+            "MR-full-R1@0.3": moment_ret_scores["full"]["MR-R1"]["0.3"],
             "MR-full-R1@0.5": moment_ret_scores["full"]["MR-R1"]["0.5"],
             "MR-full-R1@0.7": moment_ret_scores["full"]["MR-R1"]["0.7"],
         }
         eval_metrics_brief.update(
-                sorted([(k, v) for k, v in moment_ret_scores_brief.items()], key=lambda x: x[0]))
-        
+            sorted([(k, v) for k, v in moment_ret_scores_brief.items()], key=lambda x: x[0]))
+
+    if "pred_saliency_scores" in submission[0]:
+        highlight_det_scores = eval_highlight(
+            submission, ground_truth, verbose=verbose)
+        eval_metrics.update(highlight_det_scores)
+        highlight_det_scores_brief = dict([
+            (f"{k}-{sub_k.split('-')[1]}", v[sub_k])
+            for k, v in highlight_det_scores.items() for sub_k in v])
+        eval_metrics_brief.update(highlight_det_scores_brief)
+
     # sort by keys
     final_eval_metrics = OrderedDict()
     final_eval_metrics["brief"] = eval_metrics_brief
