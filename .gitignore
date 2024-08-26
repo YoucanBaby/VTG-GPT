@@ -37,4 +37,4 @@ LLaVA-7B-Lightening-v1-1/
 
 # outputs
 data/qvhighlights/caption/val
-data/qvhighlights/caption/test
+# data/qvhighlights/caption/test
