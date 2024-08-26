@@ -54,10 +54,29 @@ Run the above code to get:
 
 
 ## MiniGPT-v2 for Image captioning
-TODO
+
+```sh
+cd minigpt
+conda create --name minigptv python=3.9
+pip install -r requirements.txt
+```
+
+```sh
+python run_v2.py
+```
+
 
 ## Baichuan2 for Query debiasing
-TODO
+
+```sh
+cd Baichuan2
+conda activate vtg-gpt
+```
+
+```sh
+python rephrase_query.py
+```
+
 
 # Acknowledgement
 

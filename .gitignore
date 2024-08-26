@@ -34,7 +34,6 @@ llmva-gebc/
 vid_chapters/
 TransNetV2/
 LLaVA-7B-Lightening-v1-1/
-Baichuan2/
 
 # outputs
 data/qvhighlights/caption/val
