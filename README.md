@@ -87,6 +87,19 @@ This code is based on [Moment-DETR](https://github.com/jayleicn/moment_detr) and
 
 # Citation
 If you find this project useful for your research, please kindly cite our paper.
+
+```
+@inproceedings{xu2025zero,
+  title={Zero-shot video moment retrieval via off-the-shelf multimodal large language models},
+  author={Xu, Yifang and Sun, Yunzhuo and Zhai, Benxiang and Li, Ming and Liang, Wenxin and Li, Yang and Du, Sidan},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={39},
+  number={9},
+  pages={8978--8986},
+  year={2025}
+}
+```
+
 ```
 @article{xu2024vtg,
   title={VTG-GPT: Tuning-Free Zero-Shot Video Temporal Grounding with GPT},
